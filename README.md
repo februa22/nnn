@@ -1,4 +1,7 @@
 # NHN Neural NLP (NNN)
 
-## POS Tagging
+## POS Tagger
 
+```shell
+bash pos_sejong800k.sh
+```

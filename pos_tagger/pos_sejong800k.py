@@ -152,15 +152,14 @@ class PosSejong800k(text_problems.Text2TextProblem):
         p.stop_at_eos = int(False)
 
         source_vocab_size = self._encoders["inputs"].vocab_size
-        # TODO(jongseong): Set input_modality to ELMo.
         p.input_modality = {
-            "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            # "inputs": (registry.symbol_modality("elmo_modality"), source_vocab_size)
+            # "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
+            "inputs": ("symbol:elmo_modality", source_vocab_size)
         }
         target_vocab_size = self._encoders["targets"].vocab_size
         p.target_modality = (registry.Modalities.SYMBOL, target_vocab_size)
 
-        # TODO(jongseong): Explain! Is this even needed?
+        # TODO(jongseong): Is this even needed?
         if self.packed_length:
             identity = (registry.Modalities.GENERIC, None)
             if self.has_inputs:

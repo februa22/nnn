@@ -22,7 +22,9 @@ class ElmoModality(modalities.SymbolModality):
             while len(x.get_shape()) < 3:
                 x = tf.expand_dims(x, axis=-1)
 
-        var = self._get_elmo(x)
+        # TODO(jongseong): Replace the embedding layer with ELMo.
+        var = self._get_weights()
+        # var = self._get_elmo(x)
         x = common_layers.dropout_no_scaling(
             x, 1.0 - self._model_hparams.symbol_dropout)
         ret = common_layers.gather(var, x)

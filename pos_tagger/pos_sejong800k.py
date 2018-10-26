@@ -95,12 +95,12 @@ class PosSejong800k(text_problems.Text2TextProblem):
         return "vocab_targets.%s.%s" % (self.dataset_filename(), self.vocab_type)
 
     def _generate_tabbed_vocabs(self, generator):
-        vocab_list = [self.oov_token]
-        targets_vocab_list = [self.oov_token]
+        vocab_list = set()
+        targets_vocab_list = set()
         tf.logging.info("Generating vocabularies")
         for sample in generator:
-            vocab_list.append(sample['inputs'])
-            targets_vocab_list.append(sample['targets'])
+            vocab_list.update(sample['inputs'].split())
+            targets_vocab_list.update(sample['targets'].split())
         encoder = text_encoder.TokenTextEncoder(
             None, vocab_list=vocab_list, replace_oov=self.oov_token)
         targets_encoder = text_encoder.TokenTextEncoder(
@@ -114,8 +114,11 @@ class PosSejong800k(text_problems.Text2TextProblem):
 
         # Get
         if tf.gfile.Exists(vocab_path) and tf.gfile.Exists(targets_vocab_path):
+            tf.logging.info(f'Getting vocab for inputs from {vocab_path}')
             encoder = text_encoder.TokenTextEncoder(vocab_path,
                                                     replace_oov=self.oov_token)
+            tf.logging.info(
+                f'Getting vocab for targets from {targets_vocab_path}')
             targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
                                                             replace_oov=self.oov_token)
             return encoder, targets_encoder

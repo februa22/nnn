@@ -17,10 +17,9 @@ t2t-datagen \
   --tmp_dir=$TMP_DIR \
   --problem=$PROBLEM
 
-export CUDA_VISIBLE_DEVICES=0
-
 # Train
 # *  If you run out of memory, add --hparams='batch_size=1024'.
+export CUDA_VISIBLE_DEVICES=0
 t2t-trainer \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

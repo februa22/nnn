@@ -10,7 +10,14 @@ from tensor2tensor.utils import registry
 
 @registry.register_problem
 class PosSejong800k(text_problems.Text2TextProblem):
-    """ Problem spec for Sejong POS tagging. """
+    """ Problem spec for Sejong POS tagging. 
+
+    This assigns parts of speech to each word (and other token).
+    The data is stored in a file named `parsing_train.pairs`.
+    This file is a UTF-8 text file where
+    each line contains an input sequence and POS tags,
+    separated by a tab character.
+    """
 
     @property
     def is_generate_per_split(self):

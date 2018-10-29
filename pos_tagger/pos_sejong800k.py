@@ -6,7 +6,21 @@ from itertools import tee
 import tensorflow as tf
 from tensor2tensor.data_generators import problem, text_encoder, text_problems
 from tensor2tensor.utils import registry
-from text_encoder import ElmoEncoder
+from pos_tagger.text_encoder import ElmoEncoder
+
+
+def text2text_generate_encoded(sample_generator,
+                               vocab,
+                               targets_vocab=None,
+                               has_inputs=True):
+    """Encode Text2Text samples from the generator with the vocab."""
+    targets_vocab = targets_vocab or vocab
+    for sample in sample_generator:
+        if has_inputs:
+            sample["inputs"] = vocab.encode(sample["inputs"])
+        sample["targets"] = targets_vocab.encode(sample["targets"])
+        sample["targets"].append(text_encoder.EOS_ID)
+        yield sample
 
 
 @registry.register_problem
@@ -171,7 +185,7 @@ class PosSejong800k(text_problems.Text2TextProblem):
         targets_vocab = self.get_or_generate_targets_vocab(
             generator_for_vocab, data_dir, tmp_dir)
 
-        return text_problems.text2text_generate_encoded(
+        return text2text_generate_encoded(
             generator, vocab,
             targets_vocab,
             has_inputs=self.has_inputs)

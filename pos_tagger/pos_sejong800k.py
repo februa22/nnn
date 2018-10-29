@@ -6,6 +6,7 @@ from itertools import tee
 import tensorflow as tf
 from tensor2tensor.data_generators import problem, text_encoder, text_problems
 from tensor2tensor.utils import registry
+from text_encoder import ElmoEncoder
 
 
 @registry.register_problem
@@ -136,12 +137,40 @@ class PosSejong800k(text_problems.Text2TextProblem):
         targets_encoder.store_to_file(targets_vocab_path)
         return encoder, targets_encoder
 
+    def _generate_targets_vocab(self, generator):
+        targets_vocab_list = set()
+        tf.logging.info("Generating vocabulary for targets")
+        for sample in generator:
+            targets_vocab_list.update(sample['targets'].split())
+        targets_encoder = text_encoder.TokenTextEncoder(
+            None, vocab_list=targets_vocab_list, replace_oov=self.oov_token)
+        return targets_encoder
+
+    def get_or_generate_targets_vocab(self, generator, data_dir, tmp_dir):
+        targets_vocab_path = os.path.join(
+            data_dir, self.targets_vocab_filename)
+
+        # Get
+        if tf.gfile.Exists(targets_vocab_path):
+            tf.logging.info(
+                f'Getting vocab for targets from {targets_vocab_path}')
+            targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
+                                                            replace_oov=self.oov_token)
+            return targets_encoder
+
+        # Generate
+        targets_encoder = self._generate_targets_vocab(generator)
+        targets_encoder.store_to_file(targets_vocab_path)
+        return targets_encoder
+
     def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
         generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
+
         generator, generator_for_vocab = tee(generator)
-        vocab, targets_vocab = self.get_or_generate_tabbed_vocabs(
-            generator_for_vocab,
-            data_dir, tmp_dir)
+        vocab = ElmoEncoder(tmp_dir)
+        targets_vocab = self.get_or_generate_targets_vocab(
+            generator_for_vocab, data_dir, tmp_dir)
+
         return text_problems.text2text_generate_encoded(
             generator, vocab,
             targets_vocab,
@@ -154,10 +183,13 @@ class PosSejong800k(text_problems.Text2TextProblem):
         source_vocab_size = self._encoders["inputs"].vocab_size
         p.input_modality = {
             # "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            "inputs": ("symbol:elmo_modality", source_vocab_size)
+            # "inputs": ("symbol:elmo_modality", source_vocab_size)
+            "inputs": (registry.Modalities.GENERIC, source_vocab_size)
         }
         target_vocab_size = self._encoders["targets"].vocab_size
         p.target_modality = (registry.Modalities.SYMBOL, target_vocab_size)
+        # p.target_modality = (
+        #     registry.Modalities.CLASS_LABEL, target_vocab_size)
 
         # TODO(jongseong): Is this even needed?
         if self.packed_length:

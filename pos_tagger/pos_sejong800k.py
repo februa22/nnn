@@ -29,9 +29,9 @@ class PosSejong800k(text_problems.Text2TextProblem):
     """ Problem spec for Sejong POS tagging. 
 
     This assigns parts of speech to each word (and other token).
-    The data is stored in a file named `parsing_train.pairs`.
+    The data is stored in a file named `pos_sejong800k.pairs`.
     This file is a UTF-8 text file where
-    each line contains an input sequence and POS tags,
+    each line contains an input sequence and an output sequence,
     separated by a tab character.
     """
 

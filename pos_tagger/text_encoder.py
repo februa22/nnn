@@ -45,13 +45,13 @@ class ElmoEncoder(object):
         return None
 
     def encode(self, s):
-        """Transform a string into a float 2-D array.
+        """Transform a string into a float array.
 
         Args:
             s: space separated string.
 
         Returns:
-            2-D array of float values.
+            array of float values.
         """
         preprocessed_sentence = preprocess.preprocess_and_tokenize(s)
         embeddings = self.elmo.embed_sentence(preprocessed_sentence)[0, :, :]

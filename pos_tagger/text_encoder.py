@@ -6,7 +6,7 @@ import hgtk
 import numpy as np
 from allennlp.commands.elmo import ElmoEmbedder, batch_to_ids
 
-from pos_tagger.elmo import preprocess
+from pos_tagger import preprocess
 
 
 class TextEncoder(object):

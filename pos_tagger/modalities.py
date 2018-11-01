@@ -51,10 +51,9 @@ class ElmoModality(modality.Modality):
         return ret
 
     def bottom(self, x):
-        bilm_output = elmo.elmo_bilm(x)
-        layer_activations = bilm_output['activations']
-        mask_with_bos_eos = bilm_output['mask']
         tf.logging.info('===============')
-        tf.logging.info(f'{layer_activations}')
-        tf.logging.info(f'{mask_with_bos_eos}')
-        return layer_activations
+        tf.logging.info(f'{x}')
+        s = tf.shape(x)
+        x = tf.reshape(x, [s[0], -1, 1, 512])
+        tf.logging.info(f'{x}')
+        return x

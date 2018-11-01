@@ -199,9 +199,10 @@ class PosSejong800k(text_problems.Text2TextProblem):
         source_vocab_size = self._encoders["inputs"].vocab_size
         p.input_modality = {
             # "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            # "inputs": ("generic:elmo_modality", source_vocab_size)
-            "inputs": (registry.Modalities.GENERIC, source_vocab_size)
+            "inputs": ("generic:elmo_modality", source_vocab_size)
+            # "inputs": (registry.Modalities.GENERIC, source_vocab_size)
         }
+        # p.hidden_size = 1024
         target_vocab_size = self._encoders["targets"].vocab_size
         p.target_modality = (registry.Modalities.SYMBOL, target_vocab_size)
         # p.target_modality = (
@@ -215,3 +216,18 @@ class PosSejong800k(text_problems.Text2TextProblem):
                 p.input_modality["inputs_position"] = identity
             p.input_modality["targets_segmentation"] = identity
             p.input_modality["targets_position"] = identity
+
+    def example_reading_spec(self):
+        data_fields = {"targets": tf.VarLenFeature(tf.int64)}
+        if self.has_inputs:
+            data_fields["inputs"] = tf.VarLenFeature(tf.float32)
+
+        if self.packed_length:
+            if self.has_inputs:
+                data_fields["inputs_segmentation"] = tf.VarLenFeature(tf.int64)
+                data_fields["inputs_position"] = tf.VarLenFeature(tf.int64)
+            data_fields["targets_segmentation"] = tf.VarLenFeature(tf.int64)
+            data_fields["targets_position"] = tf.VarLenFeature(tf.int64)
+
+        data_items_to_decoders = None
+        return (data_fields, data_items_to_decoders)

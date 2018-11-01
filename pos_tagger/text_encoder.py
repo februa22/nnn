@@ -54,7 +54,7 @@ class ElmoEncoder(object):
             array of float values.
         """
         preprocessed_sentence = preprocess.preprocess_and_tokenize(s)
-        embeddings = self.elmo.embed_sentence(preprocessed_sentence)[0, :, :]
+        embeddings = self.elmo.embed_sentence(preprocessed_sentence)[0, :, :512]
         embeddings = np.reshape(embeddings, [-1])
         embeddings = [float(f) for f in embeddings]
         return embeddings

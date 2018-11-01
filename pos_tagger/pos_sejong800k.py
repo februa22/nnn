@@ -6,7 +6,8 @@ from itertools import tee
 import tensorflow as tf
 from tensor2tensor.data_generators import problem, text_encoder, text_problems
 from tensor2tensor.utils import registry
-from pos_tagger.text_encoder import ElmoEncoder
+
+from pos_tagger.text_encoder import ElmoEncoder, TextEncoder
 
 
 def text2text_generate_encoded(sample_generator,
@@ -112,9 +113,9 @@ class PosSejong800k(text_problems.Text2TextProblem):
     def vocab_filename(self):
         return "vocab.%s.%s" % (self.dataset_filename(), self.vocab_type)
 
-    @property
-    def targets_vocab_filename(self):
-        return "vocab_targets.%s.%s" % (self.dataset_filename(), self.vocab_type)
+    # @property
+    # def targets_vocab_filename(self):
+    #     return "vocab_targets.%s.%s" % (self.dataset_filename(), self.vocab_type)
 
     def _generate_tabbed_vocabs(self, generator):
         vocab_list = set()
@@ -129,27 +130,27 @@ class PosSejong800k(text_problems.Text2TextProblem):
             None, vocab_list=targets_vocab_list, replace_oov=self.oov_token)
         return encoder, targets_encoder
 
-    def get_or_generate_tabbed_vocabs(self, generator, data_dir, tmp_dir):
-        vocab_path = os.path.join(data_dir, self.vocab_filename)
-        targets_vocab_path = os.path.join(
-            data_dir, self.targets_vocab_filename)
+    # def get_or_generate_tabbed_vocabs(self, generator, data_dir, tmp_dir):
+    #     vocab_path = os.path.join(data_dir, self.vocab_filename)
+    #     targets_vocab_path = os.path.join(
+    #         data_dir, self.targets_vocab_filename)
 
-        # Get
-        if tf.gfile.Exists(vocab_path) and tf.gfile.Exists(targets_vocab_path):
-            tf.logging.info(f'Getting vocab for inputs from {vocab_path}')
-            encoder = text_encoder.TokenTextEncoder(vocab_path,
-                                                    replace_oov=self.oov_token)
-            tf.logging.info(
-                f'Getting vocab for targets from {targets_vocab_path}')
-            targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
-                                                            replace_oov=self.oov_token)
-            return encoder, targets_encoder
+    #     # Get
+    #     if tf.gfile.Exists(vocab_path) and tf.gfile.Exists(targets_vocab_path):
+    #         tf.logging.info(f'Getting vocab for inputs from {vocab_path}')
+    #         encoder = text_encoder.TokenTextEncoder(vocab_path,
+    #                                                 replace_oov=self.oov_token)
+    #         tf.logging.info(
+    #             f'Getting vocab for targets from {targets_vocab_path}')
+    #         targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
+    #                                                         replace_oov=self.oov_token)
+    #         return encoder, targets_encoder
 
-        # Generate
-        encoder, targets_encoder = self._generate_tabbed_vocabs(generator)
-        encoder.store_to_file(vocab_path)
-        targets_encoder.store_to_file(targets_vocab_path)
-        return encoder, targets_encoder
+    #     # Generate
+    #     encoder, targets_encoder = self._generate_tabbed_vocabs(generator)
+    #     encoder.store_to_file(vocab_path)
+    #     targets_encoder.store_to_file(targets_vocab_path)
+    #     return encoder, targets_encoder
 
     def _generate_targets_vocab(self, generator):
         targets_vocab_list = set()
@@ -162,7 +163,7 @@ class PosSejong800k(text_problems.Text2TextProblem):
 
     def get_or_generate_targets_vocab(self, generator, data_dir, tmp_dir):
         targets_vocab_path = os.path.join(
-            data_dir, self.targets_vocab_filename)
+            data_dir, self.vocab_filename)
 
         # Get
         if tf.gfile.Exists(targets_vocab_path):
@@ -181,6 +182,7 @@ class PosSejong800k(text_problems.Text2TextProblem):
         generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
 
         generator, generator_for_vocab = tee(generator)
+        # vocab = TextEncoder()
         vocab = ElmoEncoder(tmp_dir)
         targets_vocab = self.get_or_generate_targets_vocab(
             generator_for_vocab, data_dir, tmp_dir)
@@ -197,7 +199,7 @@ class PosSejong800k(text_problems.Text2TextProblem):
         source_vocab_size = self._encoders["inputs"].vocab_size
         p.input_modality = {
             # "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            # "inputs": ("symbol:elmo_modality", source_vocab_size)
+            # "inputs": ("generic:elmo_modality", source_vocab_size)
             "inputs": (registry.Modalities.GENERIC, source_vocab_size)
         }
         target_vocab_size = self._encoders["targets"].vocab_size

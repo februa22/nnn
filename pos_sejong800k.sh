@@ -11,6 +11,11 @@ TRAIN_DIR=$HOME/t2t_train/$PROBLEM/$MODEL-$HPARAMS
 mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
 # Generate data
+# * The followings should be located in $TMP_DIR
+#   * Dataset: pos_sejong800k.pairs
+#   * ELMo resources:
+#     * Options: elmo/options.json
+#     * Weights: elmo/weights.hdf5
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

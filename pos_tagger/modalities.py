@@ -8,7 +8,7 @@ from allennlp.commands.elmo import ElmoEmbedder
 from tensor2tensor.layers import common_layers, modalities
 from tensor2tensor.utils import modality, registry
 
-from pos_tagger.elmo import preprocess
+from pos_tagger import preprocess
 
 # Make sure to set n_characters=262
 options_file = 'elmo/options.json'

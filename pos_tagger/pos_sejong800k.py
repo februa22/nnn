@@ -1,31 +1,22 @@
 # coding=utf-8
 
+import collections
 import os
 from itertools import tee
 
 import tensorflow as tf
-from tensor2tensor.data_generators import problem, text_encoder, text_problems
-from tensor2tensor.utils import registry
+from tensor2tensor.data_generators import (generator_utils, problem,
+                                           text_encoder)
+from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
+                                                         VocabType,
+                                                         text2text_txt_tab_iterator)
+from tensor2tensor.utils import metrics, registry
 
 from pos_tagger.text_encoder import ElmoEncoder, TextEncoder
 
 
-def text2text_generate_encoded(sample_generator,
-                               vocab,
-                               targets_vocab=None,
-                               has_inputs=True):
-    """Encode Text2Text samples from the generator with the vocab."""
-    targets_vocab = targets_vocab or vocab
-    for sample in sample_generator:
-        if has_inputs:
-            sample["inputs"] = vocab.encode(sample["inputs"])
-        sample["targets"] = targets_vocab.encode(sample["targets"])
-        sample["targets"].append(text_encoder.EOS_ID)
-        yield sample
-
-
 @registry.register_problem
-class PosSejong800k(text_problems.Text2TextProblem):
+class PosSejong800k(Text2TextProblem):
     """ Problem spec for Sejong POS tagging. 
 
     This assigns parts of speech to each word (and other token).
@@ -34,6 +25,17 @@ class PosSejong800k(text_problems.Text2TextProblem):
     each line contains an input sequence and an output sequence,
     separated by a tab character.
     """
+
+    @property
+    def dataset_splits(self):
+        """Splits of data to produce and number of output shards for each."""
+        return [{
+            "split": problem.DatasetSplit.TRAIN,
+            "shards": 9,
+        }, {
+            "split": problem.DatasetSplit.EVAL,
+            "shards": 1,
+        }]
 
     @property
     def is_generate_per_split(self):
@@ -52,16 +54,6 @@ class PosSejong800k(text_problems.Text2TextProblem):
             bool
         """
         return False
-
-    @property
-    def dataset_splits(self):
-        return [{
-            "split": problem.DatasetSplit.TRAIN,
-            "shards": 9,
-        }, {
-            "split": problem.DatasetSplit.EVAL,
-            "shards": 1,
-        }]
 
     def generate_samples(self, data_dir, tmp_dir, dataset_split):
         """Generate samples of input text and target text pairs.
@@ -86,7 +78,7 @@ class PosSejong800k(text_problems.Text2TextProblem):
         """
         dataset_filename = self.dataset_filename()
         data_path = os.path.join(tmp_dir, f'{dataset_filename}.pairs')
-        return text_problems.text2text_txt_tab_iterator(data_path)
+        return text2text_txt_tab_iterator(data_path)
 
     @property
     def vocab_type(self):
@@ -107,127 +99,155 @@ class PosSejong800k(text_problems.Text2TextProblem):
         Returns:
             VocabType constant
         """
-        return text_problems.VocabType.TOKEN
+        # return VocabType.TOKEN
+        return VocabType.SUBWORD
+
+    @property
+    def approx_vocab_size(self):
+        """Approximate vocab size to generate. Only for VocabType.SUBWORD."""
+        return 2**15  # ~32k
+
+    @property
+    def oov_token(self):
+        """Out of vocabulary token. Only for VocabType.TOKEN."""
+        return None
+
+    @property
+    def has_inputs(self):
+        return True
+
+    def feature_encoders(self, data_dir):
+        encoder = self.get_or_create_vocab(data_dir, None, force_get=True)
+        encoders = {"inputs": encoder, "targets": encoder}
+        return encoders
 
     @property
     def vocab_filename(self):
-        return "vocab.%s.%s" % (self.dataset_filename(), self.vocab_type)
+        if self.vocab_type == VocabType.SUBWORD:
+            return "vocab.%s.%d.%s" % (self.dataset_filename(),
+                                       self.approx_vocab_size,
+                                       VocabType.SUBWORD)
+        else:
+            return "vocab.%s.%s" % (self.dataset_filename(), VocabType.TOKEN)
 
-    # @property
-    # def targets_vocab_filename(self):
-    #     return "vocab_targets.%s.%s" % (self.dataset_filename(), self.vocab_type)
-
-    def _generate_tabbed_vocabs(self, generator):
-        vocab_list = set()
-        targets_vocab_list = set()
-        tf.logging.info("Generating vocabularies")
-        for sample in generator:
-            vocab_list.update(sample['inputs'].split())
-            targets_vocab_list.update(sample['targets'].split())
-        encoder = text_encoder.TokenTextEncoder(
-            None, vocab_list=vocab_list, replace_oov=self.oov_token)
-        targets_encoder = text_encoder.TokenTextEncoder(
-            None, vocab_list=targets_vocab_list, replace_oov=self.oov_token)
-        return encoder, targets_encoder
-
-    # def get_or_generate_tabbed_vocabs(self, generator, data_dir, tmp_dir):
-    #     vocab_path = os.path.join(data_dir, self.vocab_filename)
-    #     targets_vocab_path = os.path.join(
-    #         data_dir, self.targets_vocab_filename)
-
-    #     # Get
-    #     if tf.gfile.Exists(vocab_path) and tf.gfile.Exists(targets_vocab_path):
-    #         tf.logging.info(f'Getting vocab for inputs from {vocab_path}')
-    #         encoder = text_encoder.TokenTextEncoder(vocab_path,
-    #                                                 replace_oov=self.oov_token)
-    #         tf.logging.info(
-    #             f'Getting vocab for targets from {targets_vocab_path}')
-    #         targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
-    #                                                         replace_oov=self.oov_token)
-    #         return encoder, targets_encoder
-
-    #     # Generate
-    #     encoder, targets_encoder = self._generate_tabbed_vocabs(generator)
-    #     encoder.store_to_file(vocab_path)
-    #     targets_encoder.store_to_file(targets_vocab_path)
-    #     return encoder, targets_encoder
-
-    def _generate_targets_vocab(self, generator):
-        targets_vocab_list = set()
-        tf.logging.info("Generating vocabulary for targets")
-        for sample in generator:
-            targets_vocab_list.update(sample['targets'].split())
-        targets_encoder = text_encoder.TokenTextEncoder(
-            None, vocab_list=targets_vocab_list, replace_oov=self.oov_token)
-        return targets_encoder
-
-    def get_or_generate_targets_vocab(self, generator, data_dir, tmp_dir):
-        targets_vocab_path = os.path.join(
-            data_dir, self.vocab_filename)
-
-        # Get
-        if tf.gfile.Exists(targets_vocab_path):
-            tf.logging.info(
-                f'Getting vocab for targets from {targets_vocab_path}')
-            targets_encoder = text_encoder.TokenTextEncoder(targets_vocab_path,
-                                                            replace_oov=self.oov_token)
-            return targets_encoder
-
-        # Generate
-        targets_encoder = self._generate_targets_vocab(generator)
-        targets_encoder.store_to_file(targets_vocab_path)
-        return targets_encoder
+    def get_or_create_vocab(self, data_dir, tmp_dir, force_get=False):
+        if self.vocab_type == VocabType.CHARACTER:
+            encoder = text_encoder.ByteTextEncoder()
+        elif self.vocab_type == VocabType.SUBWORD:
+            if force_get:
+                vocab_filepath = os.path.join(data_dir, self.vocab_filename)
+                encoder = text_encoder.SubwordTextEncoder(vocab_filepath)
+            else:
+                encoder = generator_utils.get_or_generate_vocab_inner(
+                    data_dir, self.vocab_filename, self.approx_vocab_size,
+                    self.generate_text_for_vocab(data_dir, tmp_dir),
+                    max_subtoken_length=self.max_subtoken_length,
+                    reserved_tokens=(
+                        text_encoder.RESERVED_TOKENS + self.additional_reserved_tokens))
+        elif self.vocab_type == VocabType.TOKEN:
+            if force_get:
+                vocab_filepath = os.path.join(data_dir, self.vocab_filename)
+                encoder = text_encoder.TokenTextEncoder(vocab_filepath,
+                                                        replace_oov=self.oov_token)
+            else:
+                encoder = get_or_generate_vocab_inner_token(
+                    data_dir, self.vocab_filename,
+                    self.generate_text_for_vocab(data_dir, tmp_dir),
+                    self.oov_token)
+        else:
+            raise ValueError(
+                "Unrecognized VocabType: %s" % str(self.vocab_type))
+        return encoder
 
     def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
         generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
-
-        generator, generator_for_vocab = tee(generator)
-        # vocab = TextEncoder()
-        vocab = ElmoEncoder(tmp_dir)
-        targets_vocab = self.get_or_generate_targets_vocab(
-            generator_for_vocab, data_dir, tmp_dir)
-
-        return text2text_generate_encoded(
-            generator, vocab,
-            targets_vocab,
-            has_inputs=self.has_inputs)
+        encoder = self.get_or_create_vocab(data_dir, tmp_dir)
+        return text2text_generate_encoded(generator, encoder,
+                                          has_inputs=self.has_inputs)
 
     def hparams(self, defaults, unused_model_hparams):
         p = defaults
         p.stop_at_eos = int(False)
+        # p.hidden_size = 1024
 
         source_vocab_size = self._encoders["inputs"].vocab_size
         p.input_modality = {
-            # "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            "inputs": ("generic:elmo_modality", source_vocab_size)
+            "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
+            # "inputs": ("generic:elmo_modality", source_vocab_size)
             # "inputs": (registry.Modalities.GENERIC, source_vocab_size)
         }
-        # p.hidden_size = 1024
         target_vocab_size = self._encoders["targets"].vocab_size
         p.target_modality = (registry.Modalities.SYMBOL, target_vocab_size)
         # p.target_modality = (
         #     registry.Modalities.CLASS_LABEL, target_vocab_size)
 
-        # TODO(jongseong): Is this even needed?
-        if self.packed_length:
-            identity = (registry.Modalities.GENERIC, None)
-            if self.has_inputs:
-                p.input_modality["inputs_segmentation"] = identity
-                p.input_modality["inputs_position"] = identity
-            p.input_modality["targets_segmentation"] = identity
-            p.input_modality["targets_position"] = identity
-
     def example_reading_spec(self):
         data_fields = {"targets": tf.VarLenFeature(tf.int64)}
         if self.has_inputs:
-            data_fields["inputs"] = tf.VarLenFeature(tf.float32)
-
-        if self.packed_length:
-            if self.has_inputs:
-                data_fields["inputs_segmentation"] = tf.VarLenFeature(tf.int64)
-                data_fields["inputs_position"] = tf.VarLenFeature(tf.int64)
-            data_fields["targets_segmentation"] = tf.VarLenFeature(tf.int64)
-            data_fields["targets_position"] = tf.VarLenFeature(tf.int64)
+            data_fields["inputs"] = tf.VarLenFeature(tf.int64)
 
         data_items_to_decoders = None
         return (data_fields, data_items_to_decoders)
+
+    def eval_metrics(self):
+        return [
+            metrics.Metrics.ACC, metrics.Metrics.ACC_TOP5,
+            metrics.Metrics.ACC_PER_SEQ, metrics.Metrics.NEG_LOG_PERPLEXITY,
+            metrics.Metrics.APPROX_BLEU, metrics.Metrics.ROUGE_2_F,
+            metrics.Metrics.ROUGE_L_F
+        ]
+
+
+def text2text_generate_encoded(sample_generator,
+                               vocab,
+                               targets_vocab=None,
+                               has_inputs=True):
+    """Encode Text2Text samples from the generator with the vocab."""
+    targets_vocab = targets_vocab or vocab
+    for sample in sample_generator:
+        if has_inputs:
+            sample["inputs"] = vocab.encode(sample["inputs"])
+        sample["targets"] = targets_vocab.encode(sample["targets"])
+        sample["targets"].append(text_encoder.EOS_ID)
+        yield sample
+
+
+def build_token_encoder_from_generator(generator, oov_token=None):
+    # TODO(jongseong): apply collections.defaultdict to vocab_list
+    vocab_list = set()
+    for sample in generator:
+        vocab_list.update(sample['inputs'].split())
+        vocab_list.update(sample['targets'].split())
+    encoder = text_encoder.TokenTextEncoder(
+        None, vocab_list=vocab_list, replace_oov=oov_token)
+    return encoder
+
+
+def get_or_generate_vocab_inner_token(data_dir, vocab_filename, generator, oov_token):
+    """Inner implementation for vocab generators.
+
+    Args:
+        data_dir: The base directory where data and vocab files are stored. If None,
+        then do not save the vocab even if it doesn't exist.
+        vocab_filename: relative filename where vocab file is stored
+        generator: a generator that produces tokens from the vocabulary
+
+    Returns:
+        A TokenTextEncoder vocabulary object.
+    """
+    if data_dir and vocab_filename:
+        vocab_filepath = os.path.join(data_dir, vocab_filename)
+        if tf.gfile.Exists(vocab_filepath):
+            tf.logging.info("Found vocab file: %s", vocab_filepath)
+            return text_encoder.TokenTextEncoder(vocab_filepath)
+    else:
+        vocab_filepath = None
+
+    tf.logging.info("Generating vocab file: %s", vocab_filepath)
+    vocab = build_token_encoder_from_generator(generator, oov_token)
+
+    if vocab_filepath:
+        tf.gfile.MakeDirs(data_dir)
+        vocab.store_to_file(vocab_filepath)
+
+    return vocab

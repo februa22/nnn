@@ -13,9 +13,6 @@ mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 # Generate data
 # * The following files should be stored in $TMP_DIR
 #   * Data: pos_sejong800k.pairs
-#   * ELMo resources:
-#     * Options: elmo/options.json
-#     * Weights: elmo/weights.hdf5
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

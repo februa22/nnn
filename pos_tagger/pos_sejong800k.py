@@ -12,7 +12,7 @@ from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
                                                          text2text_txt_tab_iterator)
 from tensor2tensor.utils import metrics, registry
 
-from pos_tagger.text_encoder import ElmoEncoder, TextEncoder
+#from pos_tagger.text_encoder import ElmoEncoder, TextEncoder
 
 
 @registry.register_problem

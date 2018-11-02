@@ -99,8 +99,8 @@ class PosSejong800k(Text2TextProblem):
         Returns:
             VocabType constant
         """
-        # return VocabType.TOKEN
-        return VocabType.SUBWORD
+        return VocabType.TOKEN
+        # return VocabType.SUBWORD
 
     @property
     def approx_vocab_size(self):
@@ -223,8 +223,9 @@ def build_token_encoder_from_generator(generator, oov_token=None):
     # TODO(jongseong): apply collections.defaultdict to vocab_list
     vocab_list = set()
     for sample in generator:
-        vocab_list.update(sample['inputs'].split())
-        vocab_list.update(sample['targets'].split())
+        #vocab_list.update(sample['inputs'].split())
+        #vocab_list.update(sample['targets'].split())
+        vocab_list.update(sample.split())
     encoder = text_encoder.TokenTextEncoder(
         None, vocab_list=vocab_list, replace_oov=oov_token)
     return encoder

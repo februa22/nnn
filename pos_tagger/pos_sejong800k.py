@@ -116,11 +116,6 @@ class PosSejong800k(Text2TextProblem):
     def has_inputs(self):
         return True
 
-    def feature_encoders(self, data_dir):
-        encoder = self.get_or_create_vocab(data_dir, None, force_get=True)
-        encoders = {"inputs": encoder, "targets": encoder}
-        return encoders
-
     @property
     def vocab_filename(self):
         if self.vocab_type == VocabType.SUBWORD:
@@ -159,6 +154,18 @@ class PosSejong800k(Text2TextProblem):
                 "Unrecognized VocabType: %s" % str(self.vocab_type))
         return encoder
 
+    @property
+    def max_subtoken_length(self):
+        """Maximum subtoken length when generating vocab.
+
+        SubwordTextEncoder vocabulary building is quadratic-time wrt this variable,
+        setting it to None uses the length of the longest token in the corpus.
+
+        Returns:
+        an integer or None
+        """
+        return 200
+
     def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
         generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
         encoder = self.get_or_create_vocab(data_dir, tmp_dir)
@@ -167,7 +174,7 @@ class PosSejong800k(Text2TextProblem):
 
     def hparams(self, defaults, unused_model_hparams):
         p = defaults
-        p.stop_at_eos = int(False)
+        p.stop_at_eos = int(True)
         # p.hidden_size = 1024
 
         source_vocab_size = self._encoders["inputs"].vocab_size

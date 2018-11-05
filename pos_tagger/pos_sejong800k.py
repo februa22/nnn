@@ -1,8 +1,6 @@
 # coding=utf-8
 
-import collections
 import os
-from itertools import tee
 
 import tensorflow as tf
 from tensor2tensor.data_generators import (generator_utils, problem,
@@ -11,9 +9,6 @@ from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
                                                          VocabType,
                                                          text2text_txt_tab_iterator)
 from tensor2tensor.utils import metrics, registry
-
-#from pos_tagger.text_encoder import ElmoEncoder, TextEncoder
-
 
 @registry.register_problem
 class PosSejong800k(Text2TextProblem):
@@ -99,8 +94,8 @@ class PosSejong800k(Text2TextProblem):
         Returns:
             VocabType constant
         """
+        #return VocabType.SUBWORD
         return VocabType.TOKEN
-        # return VocabType.SUBWORD
 
     @property
     def approx_vocab_size(self):

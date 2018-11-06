@@ -88,8 +88,8 @@ t2t-decoder \
 ```bash
 #!/bin/sh
 
-ANSWER_FILE=usr_dir/t2t_decode/sejong_raw_refine_tokenize_output.txt
-OUTPUT_FILE=usr_dir/t2t_decode/sejong_raw_refine_tokenize_decoded.txt
+ANSWER_FILE=usr_dir/t2t_decode/sejong_raw_refine_tokenize_output.txt #정답파일
+OUTPUT_FILE=usr_dir/t2t_decode/sejong_raw_refine_tokenize_decoded.txt #디코딩 출력파일
 
 python -u pos_tagger_tester.py \
     --answer_file=$ANSWER_FILE \

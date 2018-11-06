@@ -199,7 +199,6 @@ class PosSejong800k(Text2TextProblem):
             metrics.Metrics.ROUGE_L_F
         ]
 
-
 def text2text_generate_encoded(sample_generator,
                                vocab,
                                targets_vocab=None,
@@ -218,8 +217,6 @@ def build_token_encoder_from_generator(generator, oov_token=None):
     # TODO(jongseong): apply collections.defaultdict to vocab_list
     vocab_list = set()
     for sample in generator:
-        #vocab_list.update(sample['inputs'].split())
-        #vocab_list.update(sample['targets'].split())
         vocab_list.update(sample.split())
     encoder = text_encoder.TokenTextEncoder(
         None, vocab_list=vocab_list, replace_oov=oov_token)

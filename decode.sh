@@ -1,23 +1,25 @@
+#!/bin/sh
+
 USR_DIR=pos_tagger
 PROBLEM=pos_sejong800k
 MODEL=transformer
 HPARAMS=transformer_base
 
-DATA_DIR=$HOME/www/nnn/usr_dir/t2t_data/$PROBLEM
-TMP_DIR=$HOME/www/nnn/usr_dir/t2t_datagen
-TRAIN_DIR=$HOME/www/nnn/usr_dir/t2t_train/$PROBLEM/$MODEL-$HPARAMS
-WORKER_GPU=1
+TRAIN_DIR=$HOME/t2t_train/$PROBLEM/$MODEL-$HPARAMS
+DATA_DIR=$HOME/t2t_data/$PROBLEM
+DECODE_FROM_FILE=$HOME/t2t_decode/sejong_raw_refine_subword_input.txt
+DECODE_TO_FILE=$HOME/t2t_decode/sejong_raw_refine_subword_decoded.txt
 
-mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
+BEAM_SIZE=4
+ALPHA=0.6
 
-# Generate data
-# * The following files should be stored in $TMP_DIR
-#   * Data: pos_sejong800k.pairs
-#   * ELMo resources:
-#     * Options: elmo/options.json
-#     * Weights: elmo/weights.hdf5
-t2t-datagen \
+t2t-decoder \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \
-  --tmp_dir=$TMP_DIR \
-  --problem=$PROBLEM
+  --problem=$PROBLEM \
+  --model=$MODEL \
+  --hparams_set=$HPARAMS \
+  --output_dir=$TRAIN_DIR \
+  --decode_hparams="beam_size=$BEAM_SIZE,alpha=$ALPHA" \
+  --decode_from_file=$DECODE_FROM_FILE \
+  --decode_to_file=$DECODE_TO_FILE

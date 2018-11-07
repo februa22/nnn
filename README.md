@@ -1,6 +1,6 @@
 # DeLMA
 
-DeLMA 혹은 NNN(NHN Neural NLP)은 [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)에 기반을 둔 형태소 분석기입니다.
+DeLMA(Deep Learning Morph Analyzer) 혹은 NNN PoseTagger(NHN Neural NLP PosTagger)은 [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)에 기반을 둔 형태소 분석기입니다.
 형태소 분석기 외에 새로운 Problem 모듈 추가는 `Tensor2Tensor` 프로젝트의 [new_problem.md](https://github.com/tensorflow/tensor2tensor/blob/master/docs/new_problem.md)을 참고하시기 바랍니다. 
 
 ### 설치

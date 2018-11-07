@@ -13,34 +13,50 @@ pip install -r requirement.txt
 pip install tensorflow-gpu==1.10 #if you are not using gpu, then use `pip install tensorflow`
 ```
 
-### 학습데이터 생성 및 학습
-학습데이터 생성 및 학습은 다음과 같습니다. ([pos_sejong800k.sh](https://github.com/nhnent/DeLMA/blob/dev/pos_sejong800k.sh) 참고)
+### 학습데이터 생성
+학습데이터 생성은 원본파일을 학습에 사용될 수 있는 형태로 파일을 변형하는 단계입니다.
+세부적으로 학습데이터 생성은 (1) train/dev/test로 파일을 분할해주는 과정과 (2) vocab 파일 생성하는 과정으로 이루어져 있습니다. 
+(`datagen.sh` 참고)
 ```bash
 #!/bin/sh
 USR_DIR=pos_tagger #사용자 정의 추가모듈파일 위치 
-PROBLEM=pos_sejong800k #사용자 정의로 추가한 세종태그셋 problem
+PROBLEM=pos_sejong800k_subword #사용자 정의로 추가한 세종태그셋 problem. token(음절)방식을 사용할 경우 pos_sejong800k_token을 사용해야 함 
 MODEL=transformer #transformer 기본 모델 사용
 HPARAMS=transformer_base #transformer의 기본 하이퍼파라미터 사용
 
-DATA_DIR=$HOME/t2t_data/$PROBLEM #학습 파일이 있는 폴더의 위치
-TMP_DIR=/tmp/t2t_datagen pos_sejong800k_subword.pairs
+TMP_DIR=usr_dir/t2t_datagen #원본파일의 위치.
+# TMP_DIR 폴더 내에 pos_sejong800k_subword.pairs 혹은 pos_sejong800k_token.pairs이라는 이름으로 학습파일이 존재애햐 함
+DATA_DIR=usr_dir/t2t_data/$PROBLEM #변형된 학습파일이 저장될 위치
 
-TRAIN_DIR=$HOME/t2t_train/$PROBLEM/$MODEL-$HPARAMS #학습 후 하이퍼파라미터 정보 및 모델을 저장할 폴더 위치
-
-mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
+mkdir -p $DATA_DIR
 
 #학습데이터 생성
-# * The following files should be stored in $TMP_DIR
-pos_sejong800k_subword.pairs
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \
   --tmp_dir=$TMP_DIR \
   --problem=$PROBLEM
+```
 
-#학습
-WORKER_GPU=2 #GPU 사용 개수
-export CUDA_VISIBLE_DEVICES=0,1 #CUDA GPU 번호 지정, $WORKER_GPU 개수와 일치해야 함
+### 학습
+`tensor2tensor` 패키지를 활용하여 모델을 학습시킵니다.
+(`train.sh` 참고)
+```bash
+#!/bin/sh
+USR_DIR=pos_tagger
+PROBLEM=pos_sejong800k_subword
+MODEL=transformer
+HPARAMS=transgiformer_base
+
+DATA_DIR=usr_dir/t2t_data/$PROBLEM #학습된 데이터의 위치
+TRAIN_DIR=usr_dir/t2t_train/$PROBLEM/$MODEL-$HPARAMS #학습된 모델이 저장될 위치
+
+mkdir -p $TRAIN_DIR
+
+# Train
+# *  If you run out of memory, add --hparams='batch_size=1024'.
+WORKER_GPU=2
+export CUDA_VISIBLE_DEVICES=1,2
 t2t-trainer \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

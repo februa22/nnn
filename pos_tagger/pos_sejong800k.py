@@ -10,6 +10,7 @@ from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
                                                          text2text_txt_tab_iterator)
 from tensor2tensor.utils import metrics, registry
 
+
 @registry.register_problem
 class PosSejong800kSubword(Text2TextProblem):
     """ Problem spec for Sejong POS tagging. 

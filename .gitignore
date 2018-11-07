@@ -217,3 +217,9 @@ Temporary Items
 
 #ignore pickle file
 *.pkl
+
+#ignore user-specifig directory
+usr_dir/*
+tensor2tensor/*
+*.sh
+pos_tagger/*_test.py

@@ -1,5 +1,4 @@
 #!/bin/sh
-
 USR_DIR=pos_tagger
 PROBLEM=pos_sejong800k
 MODEL=transformer

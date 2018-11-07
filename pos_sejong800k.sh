@@ -14,7 +14,7 @@ mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
 # Generate data
 # * The following files should be stored in $TMP_DIR
-#   * Data: pos_sejong800k.pairs
+#   * Data: pos_sejong800k_subword.pairs
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

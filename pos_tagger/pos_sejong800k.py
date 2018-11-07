@@ -11,11 +11,11 @@ from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
 from tensor2tensor.utils import metrics, registry
 
 @registry.register_problem
-class PosSejong800k(Text2TextProblem):
+class PosSejong800kSubword(Text2TextProblem):
     """ Problem spec for Sejong POS tagging. 
 
     This assigns parts of speech to each word (and other token).
-    The data is stored in a file named `pos_sejong800k.pairs`.
+    The data is stored in a file named `pos_sejong800k_subword.pairs`.
     This file is a UTF-8 text file where
     each line contains an input sequence and an output sequence,
     separated by a tab character.
@@ -94,8 +94,7 @@ class PosSejong800k(Text2TextProblem):
         Returns:
             VocabType constant
         """
-        #return VocabType.SUBWORD
-        return VocabType.TOKEN
+        return VocabType.SUBWORD
 
     @property
     def approx_vocab_size(self):
@@ -198,6 +197,15 @@ class PosSejong800k(Text2TextProblem):
             metrics.Metrics.APPROX_BLEU, metrics.Metrics.ROUGE_2_F,
             metrics.Metrics.ROUGE_L_F
         ]
+
+
+# PosSejong800K problem with TOKEN
+@registry.register_problem
+class PosSejong800kToken(PosSejong800kSubword):
+    @property
+    def vocab_type(self):
+        return VocabType.TOKEN
+
 
 def text2text_generate_encoded(sample_generator,
                                vocab,

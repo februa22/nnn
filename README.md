@@ -23,7 +23,7 @@ MODEL=transformer #transformer 기본 모델 사용
 HPARAMS=transformer_base #transformer의 기본 하이퍼파라미터 사용
 
 DATA_DIR=$HOME/t2t_data/$PROBLEM #학습 파일이 있는 폴더의 위치
-TMP_DIR=/tmp/t2t_datagen #전처리 되지 않은 원본 파일 위치. 해당 폴더 내에 pos_sejong800k.pairs 파일이 있어햐 함
+TMP_DIR=/tmp/t2t_datagen pos_sejong800k_subword.pairs
 
 TRAIN_DIR=$HOME/t2t_train/$PROBLEM/$MODEL-$HPARAMS #학습 후 하이퍼파라미터 정보 및 모델을 저장할 폴더 위치
 
@@ -31,7 +31,7 @@ mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
 #학습데이터 생성
 # * The following files should be stored in $TMP_DIR
-#   * Data: pos_sejong800k.pairs
+pos_sejong800k_subword.pairs
 t2t-datagen \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

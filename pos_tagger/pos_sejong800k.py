@@ -217,8 +217,9 @@ def text2text_generate_encoded(sample_generator,
     for sample in sample_generator:
         if has_inputs:
             sample["inputs"] = vocab.encode(sample["inputs"])
+            sample["inputs"].append(text_encoder.EOS_ID) #EOS 추가
         sample["targets"] = targets_vocab.encode(sample["targets"])
-        sample["targets"].append(text_encoder.EOS_ID)
+        sample["targets"].append(text_encoder.EOS_ID) #EOS 추가
         yield sample
 
 

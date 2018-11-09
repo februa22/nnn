@@ -1,10 +1,12 @@
 # DeLMA
 
 DeLMA(Deep Learning Morph Analyzer) 혹은 NNN PosTagger(NHN Neural NLP PosTagger)은 [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)에 기반을 둔 형태소 분석기입니다.
-형태소 분석기 외에 새로운 Problem 모듈 추가는 `Tensor2Tensor` 프로젝트의 [new_problem.md](https://github.com/tensorflow/tensor2tensor/blob/master/docs/new_problem.md)을 참고하시기 바랍니다. 
+형태소 분석기 외에 새로운 Problem 모듈 추가는 `Tensor2Tensor` 프로젝트의 [new_problem.md](https://github.com/tensorflow/tensor2tensor/blob/master/docs/new_problem.md)을 참고하시기 바랍니다.
 
-### 설치
+## 설치
+
 프로젝트를 clone한 후 필수 패키지를 설치합니다. (python=3.6 권장)
+
 ```bash
 git clone https://github.com/nhnent/DeLMA
 # activate virtual environment (such as conda) if needed
@@ -13,10 +15,12 @@ pip install -r requirement.txt
 pip install tensorflow-gpu==1.10 #if you are not using gpu, then use `pip install tensorflow`
 ```
 
-### 학습데이터 생성
+## 학습데이터 생성
+
 학습데이터 생성은 원본파일을 학습에 사용될 수 있는 형태로 파일을 변형하는 단계입니다.
 세부적으로 학습데이터 생성은 (1) train/dev/test로 파일을 분할해주는 과정과 (2) vocab 파일 생성하는 과정으로 이루어져 있습니다. 
 (`datagen.sh` 참고)
+
 ```bash
 #!/bin/sh
 USR_DIR=pos_tagger #사용자 정의 추가모듈파일 위치 
@@ -38,9 +42,11 @@ t2t-datagen \
   --problem=$PROBLEM
 ```
 
-### 학습
+## 학습
+
 `tensor2tensor` 패키지를 활용하여 모델을 학습시킵니다.
 (`train.sh` 참고)
+
 ```bash
 #!/bin/sh
 USR_DIR=pos_tagger
@@ -67,9 +73,11 @@ t2t-trainer \
   --output_dir=$TRAIN_DIR
 ```
 
-### 디코딩
+## 디코딩
+
 학습이 완료되면 학습된 모델을 로드하여 디코딩을 할 수 있습니다.
 ([decode.sh](https://github.com/nhnent/DeLMA/blob/dev/decode.sh) 참고)
+
 ```bash
 #!/bin/sh
 USR_DIR=pos_tagger
@@ -97,10 +105,12 @@ t2t-decoder \
   --decode_to_file=$DECODE_TO_FILE
  ```
 
-### 성능평가
+## 성능평가
+
 완료된 디코딩(혹은 prediction)에 대하여 정확도를 평가합니다.
 디코딩된 토큰이 입력된 토큰과 일치하고 순서가 일치하는지에 대하여 평가합니다.
 ([test.sh](https://github.com/nhnent/DeLMA/blob/dev/test.sh) 참고)
+
 ```bash
 #!/bin/sh
 

@@ -121,3 +121,15 @@ python -u pos_tagger_tester.py \
     --answer_file=$ANSWER_FILE \
     --output_file=$OUTPUT_FILE
 ```
+
+### 성능평가 결과 비교
+
+데이터셋(세종)으로부터 랜덤하게 10% (87,521개) 추출해서 테스트에 사용.
+
+*학습셋도 포함되어 있기 때문에 상대평가만 가능합니다. 검증셋(TFRecode)에 대해서 다시 평가할 예정입니다.*
+
+No. | Vocab Type | ACC_WITH_SEQ | 비고
+--- | --- | :---: | :---:
+1 | Token | 95.63 | Inputs: 음절; Targets: 단어
+2 | Subword | 97.25 | -
+3 | Subword + JIANA | 99.04 | -

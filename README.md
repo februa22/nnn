@@ -169,12 +169,12 @@ python -u pos_tagger_tester.py \
 
 ### 성능평가 결과 비교
 
-데이터셋(세종)으로부터 랜덤하게 10% (87,521개) 추출해서 테스트에 사용.
+검증셋(dev-set)에 대한 성능입니다.
 
-*학습셋도 포함되어 있기 때문에 상대평가만 가능합니다. 검증셋(TFRecode)에 대해서 다시 평가할 예정입니다.*
+*검증셋: 학습 과정에서 랜덤하게 10%(87,521개)를 추출합니다.*
 
-No. | Vocab Type | ACC_WITH_SEQ | 비고
---- | --- | :---: | :---:
-1 | Token | 95.63 | Inputs: 음절; Targets: 단어
-2 | Subword | 97.25 | -
-3 | Subword + JIANA | 99.04 | -
+No. | Vocab Type | ACC_WITH_SEQ | Inputs 샘플 | Targets 샘플
+--- | --- | :---: | --- | ---
+1 | Token | 낮음 | 엠 마 누 엘 SP 웅 가 로 | 엠마누엘/NNP 웅가로/NNP
+2 | Subword | 94.72 | 엠마누엘 웅가로 | 엠마누엘/NNP 웅가로/NNP
+3 | Subword + JIANA | 96.33 | 엠마누엘 nq_per 웅가로 nq_per | 엠마누엘/NNP 웅가로/NNP

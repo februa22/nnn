@@ -8,11 +8,11 @@ DeLMA(Deep Learning Morph Analyzer)는 [Tensor2Tensor](https://github.com/tensor
 프로젝트를 clone한 후 필수 패키지를 설치합니다. (python=3.6 권장)
 
 ```bash
-git clone https://github.nhnent.com/hyojun-jang/DeLMA.git
+$ git clone https://github.nhnent.com/hyojun-jang/DeLMA.git
 # activate virtual environment (such as conda) if needed
-cd DelMA
-pip install -r requirement.txt
-pip install tensorflow-gpu==1.10 #if you are not using gpu, then use `pip install tensorflow`
+$ cd DelMA
+$ pip install -r requirement.txt
+$ pip install tensorflow-gpu==1.10 #if you are not using gpu, then use `pip install tensorflow`
 ```
 
 ## 학습데이터 생성

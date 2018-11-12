@@ -5,10 +5,9 @@ PROBLEM=pos_sejong800k
 MODEL=transformer
 HPARAMS=transformer_base
 
-DATA_DIR=$HOME/t2t_data/$PROBLEM
-TMP_DIR=/tmp/t2t_datagen
-WORKER_GPU=1
-TRAIN_DIR=$HOME/t2t_train/$PROBLEM/$MODEL-$HPARAMS
+DATA_DIR=/data/t2t_data/$PROBLEM
+TMP_DIR=/data/t2t_datagen
+TRAIN_DIR=/data/t2t_train/$PROBLEM/$MODEL-$HPARAMS
 
 mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
@@ -23,7 +22,9 @@ t2t-datagen \
 
 # Train
 # *  If you run out of memory, add --hparams='batch_size=1024'.
-export CUDA_VISIBLE_DEVICES=0
+WORKER_GPU=1  # The number of GPUs for training
+export CUDA_VISIBLE_DEVICES=0  # GPU IDs to be used
+
 t2t-trainer \
   --t2t_usr_dir=$USR_DIR \
   --data_dir=$DATA_DIR \

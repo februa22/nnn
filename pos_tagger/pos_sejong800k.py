@@ -111,6 +111,13 @@ class PosSejong800kSubword(Text2TextProblem):
     def has_inputs(self):
         return True
 
+    def feature_encoders(self, data_dir):
+        encoder = self.get_or_create_vocab(data_dir, None, force_get=True)
+        encoders = {"targets": encoder}
+        if self.has_inputs:
+            encoders["inputs"] = encoder
+        return encoders
+
     @property
     def vocab_filename(self):
         if self.vocab_type == VocabType.SUBWORD:
@@ -217,9 +224,9 @@ def text2text_generate_encoded(sample_generator,
     for sample in sample_generator:
         if has_inputs:
             sample["inputs"] = vocab.encode(sample["inputs"])
-            sample["inputs"].append(text_encoder.EOS_ID) #EOS 추가
+            sample["inputs"].append(text_encoder.EOS_ID)  # EOS 추가
         sample["targets"] = targets_vocab.encode(sample["targets"])
-        sample["targets"].append(text_encoder.EOS_ID) #EOS 추가
+        sample["targets"].append(text_encoder.EOS_ID)  # EOS 추가
         yield sample
 
 

@@ -165,6 +165,12 @@ class PosSejong800kSubword(Text2TextProblem):
                 "Unrecognized VocabType: %s" % str(self.vocab_type))
         return encoder
 
+    def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
+        generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
+        encoder = self.get_or_create_vocab(data_dir, tmp_dir)
+        return text2text_generate_encoded(generator, encoder,
+                                          has_inputs=self.has_inputs)
+
     @property
     def max_subtoken_length(self):
         """Maximum subtoken length when generating vocab.
@@ -173,31 +179,20 @@ class PosSejong800kSubword(Text2TextProblem):
         setting it to None uses the length of the longest token in the corpus.
 
         Returns:
-        an integer or None
+            an integer or None
         """
         return 200
-
-    def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
-        generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
-        encoder = self.get_or_create_vocab(data_dir, tmp_dir)
-        return text2text_generate_encoded(generator, encoder,
-                                          has_inputs=self.has_inputs)
 
     def hparams(self, defaults, unused_model_hparams):
         p = defaults
         p.stop_at_eos = int(True)
-        # p.hidden_size = 1024
 
         source_vocab_size = self._encoders["inputs"].vocab_size
         p.input_modality = {
             "inputs": (registry.Modalities.SYMBOL, source_vocab_size)
-            # "inputs": ("generic:elmo_modality", source_vocab_size)
-            # "inputs": (registry.Modalities.GENERIC, source_vocab_size)
         }
         target_vocab_size = self._encoders["targets"].vocab_size
         p.target_modality = (registry.Modalities.SYMBOL, target_vocab_size)
-        # p.target_modality = (
-        #     registry.Modalities.CLASS_LABEL, target_vocab_size)
 
     def example_reading_spec(self):
         data_fields = {"targets": tf.VarLenFeature(tf.int64)}
@@ -216,9 +211,9 @@ class PosSejong800kSubword(Text2TextProblem):
         ]
 
 
-# PosSejong800K problem with TOKEN
 @registry.register_problem
 class PosSejong800kToken(PosSejong800kSubword):
+    """ Problem spec for Sejong POS tagging with TOKEN inputs. """
     @property
     def vocab_type(self):
         return VocabType.TOKEN

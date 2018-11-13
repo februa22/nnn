@@ -1,14 +1,15 @@
 # coding=utf-8
 
 import os
-
 import tensorflow as tf
 from tensor2tensor.data_generators import (generator_utils, problem,
                                            text_encoder)
 from tensor2tensor.data_generators.text_problems import (Text2TextProblem,
                                                          VocabType,
                                                          text2text_txt_tab_iterator)
+
 from tensor2tensor.utils import metrics, registry
+from itertools import tee
 
 
 @registry.register_problem
@@ -207,6 +208,75 @@ class PosSejong800kToken(PosSejong800kSubword):
     def vocab_type(self):
         return VocabType.TOKEN
 
+
+# PosSejong800k problem with TOKEN input and SUBWORD target
+@registry.register_problem
+class PosSejong800kInputTokenTargetSubword(PosSejong800kToken):
+
+    @property
+    def targets_vocab_type(self):
+        return VocabType.SUBWORD
+
+    @property
+    def targets_vocab_filename(self):
+        return "vocab_targets.%s.%s" % (self.dataset_filename(), self.targets_vocab_type)
+
+    #using generator by key
+    def _generate_by_key(self, generator, key):
+        for sample in generator:
+            if key not in sample.keys():
+                raise KeyError
+            #if key == 'targets':
+            #    print(f'sample[{key}]={sample[key]}')
+            yield sample[key]
+
+    def _create_encoder_from_generator(self, generator, vocab_type, data_dir, vocab_filename):
+        #input TOKEN
+        if vocab_type == VocabType.TOKEN:
+            vocab_list = set()
+            tf.logging.info("Generating vocabulary for INPUTS")
+            for sample in generator:
+                vocab_list.update(sample.split())
+            encoder = text_encoder.TokenTextEncoder(
+                None, vocab_list=vocab_list, replace_oov=self.oov_token)
+        #target SUBWORD
+        elif vocab_type == VocabType.SUBWORD:
+            tf.logging.info("Generating vocabulary for TARGETS")
+            encoder = text_encoder.SubwordTextEncoder.build_from_generator(
+                generator, self.approx_vocab_size, max_subtoken_length=self.max_subtoken_length,
+                reserved_tokens=text_encoder.RESERVED_TOKENS + self.additional_reserved_tokens)
+        else:
+            raise ValueError(
+                "Unrecognized VocabType: %s" % str(vocab_type))
+        vocab_file_path = os.path.join(data_dir, vocab_filename)
+        print(f'SAVING... {vocab_type} vocab_file_path={vocab_file_path}')
+        encoder.store_to_file(vocab_file_path)
+        return encoder
+
+    #override
+    def generate_encoded_samples(self, data_dir, tmp_dir, dataset_split):
+
+        generator = self.generate_samples(data_dir, tmp_dir, dataset_split)
+        generator, generator_for_input, generator_for_target = tee(generator, 3)
+        input_generator = self._generate_by_key(generator_for_input, 'inputs')
+        target_generator = self._generate_by_key(generator_for_target, 'targets')
+
+        input_encoder = self._create_encoder_from_generator(input_generator, self.vocab_type, data_dir,
+                                                            self.vocab_filename)
+        target_encoder = self._create_encoder_from_generator(target_generator, self.targets_vocab_type, data_dir,
+                                                             self.targets_vocab_filename)
+
+        return text2text_generate_encoded(generator, input_encoder, target_encoder, has_inputs=self.has_inputs)
+
+    #TODO different encoder for input and target when decoding
+    '''
+    def feature_encoders(self, data_dir):
+        encoder = self.get_or_create_vocab(data_dir, None, force_get=True)
+        encoders = {"targets": encoder}
+        if self.has_inputs:
+            encoders["inputs"] = encoder
+        return encoders
+    '''
 
 def text2text_generate_encoded(sample_generator,
                                vocab,

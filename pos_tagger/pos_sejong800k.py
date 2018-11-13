@@ -118,6 +118,15 @@ class PosSejong800kSubword(Text2TextProblem):
             encoders["inputs"] = encoder
         return encoders
 
+    def generate_text_for_vocab(self, data_dir, tmp_dir):
+        for i, sample in enumerate(
+                self.generate_samples(data_dir, tmp_dir, problem.DatasetSplit.TRAIN)):
+            if self.has_inputs:
+                yield sample["inputs"]
+            yield sample["targets"]
+            if self.max_samples_for_vocab and (i + 1) >= self.max_samples_for_vocab:
+                break
+
     @property
     def vocab_filename(self):
         if self.vocab_type == VocabType.SUBWORD:

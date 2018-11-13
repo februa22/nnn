@@ -13,7 +13,7 @@ from tensor2tensor.utils import metrics, registry
 
 @registry.register_problem
 class PosSejong800kSubword(Text2TextProblem):
-    """ Problem spec for Sejong POS tagging. 
+    """ Problem spec for Sejong POS tagging with SUBWORD inputs. 
 
     This assigns parts of speech to each word (and other token).
     The data is stored in a file named `pos_sejong800k_subword.pairs`.
@@ -213,7 +213,14 @@ class PosSejong800kSubword(Text2TextProblem):
 
 @registry.register_problem
 class PosSejong800kToken(PosSejong800kSubword):
-    """ Problem spec for Sejong POS tagging with TOKEN inputs. """
+    """ Problem spec for Sejong POS tagging with TOKEN inputs.
+
+    This assigns parts of speech to each word (and other token).
+    The data is stored in a file named `pos_sejong800k_token.pairs`.
+    This file is a UTF-8 text file where
+    each line contains an input sequence and an output sequence,
+    separated by a tab character.
+    """
     @property
     def vocab_type(self):
         return VocabType.TOKEN

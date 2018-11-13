@@ -1,7 +1,7 @@
 #!/bin/sh
 
 USR_DIR=pos_tagger
-PROBLEM=pos_sejong800k
+PROBLEM=pos_sejong800k_subword
 MODEL=transformer
 HPARAMS=transformer_base
 

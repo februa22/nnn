@@ -77,7 +77,7 @@ t2t-trainer \
 ## 디코딩
 
 학습이 완료되면 학습된 모델을 로드하여 디코딩을 할 수 있습니다.
-([decode.sh](https://github.com/nhnent/DeLMA/blob/dev/decode.sh) 참고)
+([decode.sh](https://github.nhnent.com/hyojun-jang/DeLMA/blob/master/decode.sh) 참고)
 
 ```bash
 #!/bin/sh
@@ -154,7 +154,7 @@ t2t-decoder \
 
 완료된 디코딩(혹은 prediction)에 대하여 정확도를 평가합니다.
 디코딩된 토큰이 입력된 토큰과 일치하고 순서가 일치하는지에 대하여 평가합니다.
-([test.sh](https://github.com/nhnent/DeLMA/blob/dev/test.sh) 참고)
+([test.sh](https://github.nhnent.com/hyojun-jang/DeLMA/blob/master/test.sh) 참고)
 
 ```bash
 #!/bin/sh
@@ -185,4 +185,5 @@ No. | Vocab Type | ACC_WITH_SEQ | Inputs 샘플 | Targets 샘플
 - [Transformer: A Novel Neural Network Architecture for Language Understanding](https://ai.googleblog.com/2017/08/transformer-novel-neural-network.html)
 - [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
 - [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)
+- [Training Tips for the Transformer Model](https://arxiv.org/abs/1804.00247)
 - [Word Piece Model (a.k.a sentencepiece)](https://lovit.github.io/nlp/2018/04/02/wpm/)

@@ -226,6 +226,21 @@ class PosSejong800kToken(PosSejong800kSubword):
         return VocabType.TOKEN
 
 
+@registry.register_problem
+class PosSejong800kJianaSubword(PosSejong800kSubword):
+    """ Problem spec for Sejong POS tagging with SUBWORD vocab and JIANA inputs.
+
+    This assigns parts of speech to each word (and other token).
+    The data is stored in a file named `pos_sejong800k_jiana_subword.pairs`.
+    This file is a UTF-8 text file where
+    each line contains an input sequence and an output sequence,
+    separated by a tab character.
+    """
+    @property
+    def vocab_type(self):
+        return VocabType.SUBWORD
+
+
 def text2text_generate_encoded(sample_generator,
                                vocab,
                                targets_vocab=None,

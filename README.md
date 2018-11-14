@@ -12,8 +12,16 @@ $ git clone https://github.nhnent.com/hyojun-jang/DeLMA.git
 # activate virtual environment (such as conda) if needed
 $ cd DelMA
 $ pip install -r requirement.txt
-$ pip install tensorflow-gpu==1.10 #if you are not using gpu, then use `pip install tensorflow`
+$ pip install tensorflow-gpu==1.11 #if you are not using gpu, then use `pip install tensorflow==1.11`
 ```
+
+## Available Problems
+
+No. | Problem Names | USR_DIR | Class Names
+--- | --- | --- | ---
+1 | pos_sejong800k_subword | pos_tagger | `PosSejong800kSubword`
+2 | pos_sejong800k_token | pos_tagger | `PosSejong800kToken`
+3 | pos_sejong800k_jiana_subword | pos_tagger | `PosSejong800kJianaSubword`
 
 ## 학습데이터 생성
 

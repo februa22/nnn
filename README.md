@@ -178,3 +178,11 @@ No. | Vocab Type | ACC_WITH_SEQ | Inputs 샘플 | Targets 샘플
 1 | Token | 낮음 | 엠 마 누 엘 SP 웅 가 로 | 엠마누엘/NNP 웅가로/NNP
 2 | Subword | 94.72 | 엠마누엘 웅가로 | 엠마누엘/NNP 웅가로/NNP
 3 | Subword + JIANA | 96.33 | 엠마누엘 nq_per 웅가로 nq_per | 엠마누엘/NNP 웅가로/NNP
+
+## References
+
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [Transformer: A Novel Neural Network Architecture for Language Understanding](https://ai.googleblog.com/2017/08/transformer-novel-neural-network.html)
+- [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
+- [Tensor2Tensor](https://github.com/tensorflow/tensor2tensor)
+- [Word Piece Model (a.k.a sentencepiece)](https://lovit.github.io/nlp/2018/04/02/wpm/)
